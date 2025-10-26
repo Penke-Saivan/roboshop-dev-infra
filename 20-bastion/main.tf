@@ -1,10 +1,11 @@
-resource "aws_instance" "terraforma" {
-  ami                    = "ami-09c813fb71547fc4f"
+resource "aws_instance" "bastion" {
+  ami                    = data.aws_ami.ami.id
   instance_type          = "t3.micro"
-  vpc_security_group_ids = [aws_security_group.allow_all_tf.id]
+  vpc_security_group_ids = [data.aws_ssm_parameter.bastion_id.value]
+  subnet_id              = split(",", data.aws_ssm_parameter.public_subnet_ids.value)[0]
 
-  tags = {
-    Name      = "HelloWorld" #Name of the instance and also present in tags section in AWS
-    Terraform = "true"
-  }
+
+  tags = merge(local.common_tags,
+    { Name = "${local.common_name_suffix}- bastion" }
+  )
 }

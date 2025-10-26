@@ -5,5 +5,5 @@ variable "environment" {
   default = "dev"
 }
 variable "sg_name" {
-  default = ["mysql", "redis", "rabbitmq", "mongodb"]
+  default = ["mysql", "redis", "rabbitmq", "mongodb", "bastion"]
 }
