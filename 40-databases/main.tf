@@ -1,0 +1,40 @@
+resource "aws_instance" "mongodb" {
+  ami                    = data.aws_ami.ami.id
+  instance_type          = "t3.micro"
+  vpc_security_group_ids = [local.mongodb_sg_id]
+  subnet_id              = local.database_subnet_id
+#   subnet_id              = split(",", data.aws_ssm_parameter.public_subnet_ids.value)[0]
+
+
+  tags = merge(local.common_tags,
+    { Name = "${local.common_name_suffix}- mongodb" }
+
+
+
+  )
+}
+
+
+
+resource "terraform_data" "bootstrap" {
+  triggers_replace = [
+    aws_instance.mongodb.id
+  ]
+
+connection {
+  type = "ssh"
+  user = "ec2-user"
+  password = "DevOps321"
+  host = aws_instance.mongodb.private_ip
+}
+  provisioner "remote-exec" {
+   inline = [ "echo Hello world" ]
+  }
+}
+
+# Installing Terraform 
+# https://developer.hashicorp.com/terraform/install#windows
+# sudo yum install -y yum-utils
+# sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
+# sudo yum -y install terraform
+

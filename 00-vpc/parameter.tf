@@ -17,3 +17,11 @@ resource "aws_ssm_parameter" "private_subnet_ids" {
 }
 
 # stored public net is'd in the form of string list separated by comma
+
+#database subnetids
+
+resource "aws_ssm_parameter" "database_subnet_ids" {
+  name  = "/${var.project}/${var.environment}/database_subnet_ids"
+  type  = "StringList"
+  value = join(",", module.vpc.database_subnet_ids)
+}
