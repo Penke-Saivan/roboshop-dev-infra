@@ -14,7 +14,8 @@ resource "aws_instance" "mongodb" {
   )
 }
 
-
+# terraform taint terraform_data.bootstrap
+# Resource instance terraform_data.bootstrap has been marked as tainted.
 
 resource "terraform_data" "bootstrap" {
   triggers_replace = [
@@ -30,7 +31,7 @@ resource "terraform_data" "bootstrap" {
   #Provisioner used to copy files or directories from the machine executing Terraform to the newly created resource.
   #how to copy a file from terraform to ec2
   provisioner "file" {
-    source      = "./bootstrap.sh"
+    source      = "bootstrap.sh"
     destination = "/tmp/bootstrap.sh"
   }
   provisioner "remote-exec" {
