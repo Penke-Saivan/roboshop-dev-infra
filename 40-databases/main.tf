@@ -18,6 +18,8 @@ resource "aws_instance" "mongodb" {
 # Resource instance terraform_data.bootstrap has been marked as tainted.
 
 resource "terraform_data" "bootstrap" {
+
+
   triggers_replace = [
     aws_instance.mongodb.id
   ]
@@ -28,20 +30,25 @@ resource "terraform_data" "bootstrap" {
     password = "DevOps321"
     host     = aws_instance.mongodb.private_ip
   }
+
   #Provisioner used to copy files or directories from the machine executing Terraform to the newly created resource.
   #how to copy a file from terraform to ec2
+
+
   provisioner "file" {
     source      = "bootstrap.sh"
     destination = "/tmp/bootstrap.sh"
   }
-  provisioner "remote-exec" {
-    inline = ["chmod +x /tmp/bootstrap.sh", "sudo sh /tmp/bootstarp.sh"]
-  }
-  # provisioner "remote-exec" {
-  #  inline = [ "echo Hello world" ]
-  # }
-}
 
+  provisioner "remote-exec" {
+    inline = ["chmod +x /tmp/bootstrap.sh",
+      "sudo sh /tmp/bootstarp.sh"
+    ]
+  }
+}
+# provisioner "remote-exec" {
+#  inline = [ "echo Hello world" ]
+# }
 # Installing Terraform 
 # https://developer.hashicorp.com/terraform/install#windows
 # sudo yum install -y yum-utils
