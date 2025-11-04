@@ -28,3 +28,15 @@ resource "aws_security_group_rule" "bastion_laptop" {
   cidr_blocks = ["0.0.0.0/0"]
   security_group_id        = data.aws_ssm_parameter.bastion_id.value #bastion host
 }
+
+resource "aws_security_group_rule" "mongodb_bastion" {
+  #creating security rule in backend_alb - where we are attaching sg of bastion host
+  #mongodb accepting ssh conection from bastion
+  type                     = "ingress"
+  from_port                = 22
+  to_port                  = 22
+  protocol                 = "tcp"
+  # cidr_blocks = ["0.0.0.0/0"]
+  source_security_group_id =  data.aws_ssm_parameter.bastion_id.value #bastion host
+  security_group_id        = data.aws_ssm_parameter.mongodb_id.value
+}
