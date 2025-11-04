@@ -3,7 +3,7 @@ resource "aws_instance" "mongodb" {
   instance_type          = "t3.micro"
   vpc_security_group_ids = [local.mongodb_sg_id]
   subnet_id              = local.database_subnet_id
-#   subnet_id              = split(",", data.aws_ssm_parameter.public_subnet_ids.value)[0]
+  #   subnet_id              = split(",", data.aws_ssm_parameter.public_subnet_ids.value)[0]
 
 
   tags = merge(local.common_tags,
@@ -21,15 +21,24 @@ resource "terraform_data" "bootstrap" {
     aws_instance.mongodb.id
   ]
 
-connection {
-  type = "ssh"
-  user = "ec2-user"
-  password = "DevOps321"
-  host = aws_instance.mongodb.private_ip
-}
-  provisioner "remote-exec" {
-   inline = [ "echo Hello world" ]
+  connection {
+    type     = "ssh"
+    user     = "ec2-user"
+    password = "DevOps321"
+    host     = aws_instance.mongodb.private_ip
   }
+  #Provisioner used to copy files or directories from the machine executing Terraform to the newly created resource.
+  #how to copy a file from terraform to ec2
+  provisioner "file" {
+    source      = "./bootstrap.sh"
+    destination = "/tmp/bootstrap.sh"
+  }
+  provisioner "remote-exec" {
+    inline = ["chmod +x /tmp/bootstrap.sh", "sudo sh /tmp/bootstarp.sh"]
+  }
+  # provisioner "remote-exec" {
+  #  inline = [ "echo Hello world" ]
+  # }
 }
 
 # Installing Terraform 
