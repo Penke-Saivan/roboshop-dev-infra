@@ -9,6 +9,7 @@
 # }
 
 resource "aws_security_group_rule" "backend-alb_bastion" {
+  #backen-alb acceptiong connection from bastion on port number 80
   #creating security rule in backend_alb - where we are attaching sg of bastion host
   type                     = "ingress"
   from_port                = 80
