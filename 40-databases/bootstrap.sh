@@ -18,7 +18,7 @@ touch ansible.log
 cd $REPO_DIR
 
 if [ -d $ANSIBLE_DIR ]; then
-
+#check if repo already exists
     cd $ANSIBLE_DIR
     git pull
 
