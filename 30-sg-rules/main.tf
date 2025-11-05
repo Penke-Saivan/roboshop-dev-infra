@@ -15,28 +15,63 @@ resource "aws_security_group_rule" "backend-alb_bastion" {
   from_port                = 80
   to_port                  = 80
   protocol                 = "tcp"
-  source_security_group_id =  data.aws_ssm_parameter.bastion_id.value #bastion host
+  source_security_group_id = data.aws_ssm_parameter.bastion_id.value        #bastion host
   security_group_id        = data.aws_ssm_parameter.backend-alb_sg-id.value #backend_alb 
 }
 
 resource "aws_security_group_rule" "bastion_laptop" {
   #creating security rule in backend_alb - where we are attaching sg of bastion host
-  type                     = "ingress"
-  from_port                = 22
-  to_port                  = 22
-  protocol                 = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
-  security_group_id        = data.aws_ssm_parameter.bastion_id.value #bastion host
+  type              = "ingress"
+  from_port         = 22
+  to_port           = 22
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = data.aws_ssm_parameter.bastion_id.value #bastion host
 }
 
 resource "aws_security_group_rule" "mongodb_bastion" {
   #creating security rule in backend_alb - where we are attaching sg of bastion host
   #mongodb accepting ssh conection from bastion
-  type                     = "ingress"
-  from_port                = 22
-  to_port                  = 22
-  protocol                 = "tcp"
+  type      = "ingress"
+  from_port = 22
+  to_port   = 22
+  protocol  = "tcp"
   # cidr_blocks = ["0.0.0.0/0"]
-  source_security_group_id =  data.aws_ssm_parameter.bastion_id.value #bastion host
+  source_security_group_id = data.aws_ssm_parameter.bastion_id.value #bastion host
   security_group_id        = data.aws_ssm_parameter.mongodb_id.value
+}
+
+resource "aws_security_group_rule" "redis_bastion" {
+  #creating security rule in backend_alb - where we are attaching sg of bastion host
+  #mongodb accepting ssh conection from bastion
+  type      = "ingress"
+  from_port = 22
+  to_port   = 22
+  protocol  = "tcp"
+  # cidr_blocks = ["0.0.0.0/0"]
+  source_security_group_id = data.aws_ssm_parameter.bastion_id.value #bastion host
+  security_group_id        = data.aws_ssm_parameter.redis_id.value
+}
+resource "aws_security_group_rule" "rabbitmq_bastion" {
+  #creating security rule in backend_alb - where we are attaching sg of bastion host
+  #mongodb accepting ssh conection from bastion
+  type      = "ingress"
+  from_port = 22
+  to_port   = 22
+  protocol  = "tcp"
+  # cidr_blocks = ["0.0.0.0/0"]
+  source_security_group_id = data.aws_ssm_parameter.bastion_id.value #bastion host
+  security_group_id        = data.aws_ssm_parameter.rabbitmq_id.value
+}
+
+resource "aws_security_group_rule" "mysql_bastion" {
+  #creating security rule in backend_alb - where we are attaching sg of bastion host
+  #mongodb accepting ssh conection from bastion
+  type      = "ingress"
+  from_port = 22
+  to_port   = 22
+  protocol  = "tcp"
+  # cidr_blocks = ["0.0.0.0/0"]
+  source_security_group_id = data.aws_ssm_parameter.bastion_id.value #bastion host
+  security_group_id        = data.aws_ssm_parameter.mysql_id.value
 }
