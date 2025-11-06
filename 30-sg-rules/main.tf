@@ -89,3 +89,16 @@ resource "aws_security_group_rule" "catalogue_bastion" {
   source_security_group_id = data.aws_ssm_parameter.bastion_id.value #bastion host
   security_group_id        = data.aws_ssm_parameter.catalogue_id.value
 }
+
+#mongodb accepting connection from catalogue from port 27017
+
+resource "aws_security_group_rule" "mongodb_catalogue" {
+
+  type      = "ingress"
+  from_port = 27017
+  to_port   = 27017
+  protocol  = "tcp"
+  # cidr_blocks = ["0.0.0.0/0"]
+  source_security_group_id = data.aws_ssm_parameter.catalogue_id.value
+  security_group_id        = data.aws_ssm_parameter.mongodb_id.value
+}
