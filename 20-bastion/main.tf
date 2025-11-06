@@ -3,9 +3,14 @@ resource "aws_instance" "bastion" {
   instance_type          = "t3.micro"
   vpc_security_group_ids = [data.aws_ssm_parameter.bastion_id.value]
   subnet_id              = split(",", data.aws_ssm_parameter.public_subnet_ids.value)[0]
-
-user_data = file("bastion.sh")
+  iam_instance_profile   = aws_iam_instance_profile.bastion.name
+  user_data              = file("bastion.sh")
   tags = merge(local.common_tags,
     { Name = "${local.common_name_suffix}- bastion" }
   )
+}
+
+resource "aws_iam_instance_profile" "bastion" {
+  name = "test_profile_for_bastion"
+  role = "BastionTerraformAdministrator "
 }
