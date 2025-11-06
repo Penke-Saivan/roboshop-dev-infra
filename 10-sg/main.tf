@@ -11,7 +11,7 @@
 #   use_name_prefix = false
 
 # }
-module "catalogue" {
+module "sg" {
   count       = length(var.sg_name)
   source      = "git::https://github.com/Penke-Saivan/terraform-aws-sg-module.git?ref=main"
   environment = var.environment
