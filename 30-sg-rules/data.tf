@@ -21,3 +21,8 @@ data "aws_ssm_parameter" "mysql_id" {
 data "aws_ssm_parameter" "rabbitmq_id" {
   name = "/${var.project}/${var.environment}/rabbitmq_sg-id"
 }
+
+
+data "aws_ssm_parameter" "catalogue_id" {
+  name = "/${var.project}/${var.environment}/catalogue_sg-id"
+}

@@ -75,3 +75,17 @@ resource "aws_security_group_rule" "mysql_bastion" {
   source_security_group_id = data.aws_ssm_parameter.bastion_id.value #bastion host
   security_group_id        = data.aws_ssm_parameter.mysql_id.value
 }
+
+
+#catalogue instance accepting traffic from bastion 
+
+resource "aws_security_group_rule" "catalogue_bastion" {
+
+  type      = "ingress"
+  from_port = 22
+  to_port   = 22
+  protocol  = "tcp"
+  # cidr_blocks = ["0.0.0.0/0"]
+  source_security_group_id = data.aws_ssm_parameter.bastion_id.value #bastion host
+  security_group_id        = data.aws_ssm_parameter.catalogue_id.value
+}
