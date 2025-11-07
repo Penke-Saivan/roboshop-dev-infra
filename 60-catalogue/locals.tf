@@ -8,6 +8,7 @@ locals {
   rabbitmq_sg_id= data.aws_ssm_parameter.rabbitmq_id.value
   database_subnet_id= split(",", data.aws_ssm_parameter.database_subnet_ids.value)[0]
   private_subnet_id= split(",", data.aws_ssm_parameter.private_subnet_ids.value)[0]
+  private_subnet_ids= split(",", data.aws_ssm_parameter.private_subnet_ids.value)
     common_tags = {
     Project     = var.project
     Environment = var.environment

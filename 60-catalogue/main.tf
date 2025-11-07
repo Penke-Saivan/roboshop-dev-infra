@@ -8,11 +8,7 @@ resource "aws_instance" "catalogue" {
 
 
   tags = merge(local.common_tags,
-    { Name = "${local.common_name_suffix}- catalogue" }
-
-
-
-  )
+  { Name = "${local.common_name_suffix}- catalogue" })
 }
 
 # terraform taint terraform_data.bootstrap
@@ -70,4 +66,116 @@ resource "aws_ami_from_instance" "take_catalogue_ami" {
 }
 
 
+#Now creating Traget Group
 
+resource "aws_lb_target_group" "catalogue" {
+  name                 = "${local.common_name_suffix}-catalogue"
+  port                 = 8080
+  deregistration_delay = 60 #like a notice period as he has to compleete his current roles' responsibilities
+
+  #  (May be required, Forces new resource) Port on which targets receive traffic, unless overridden when registering a specific target. Required when target_type is instance, ip or alb. Does not apply when target_type is lambda
+  protocol = "HTTP"
+  vpc_id   = data.aws_ssm_parameter.vpc_id
+  health_check {
+    path = "/health"
+    port = 8080
+    # The port the load balancer uses when performing health checks on targets. Valid values are either traffic-port, to use the same port as the target group, or a valid port number between 1 and 65536. Default is traffic-port.
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 2
+    interval            = 10
+    matcher             = "200-299"
+
+    # The HTTP or gRPC codes to use when checking for a successful response from a target. The health_check.protocol must be one of HTTP or HTTPS or the target_type must be lambda. Values can be comma-separated individual values (e.g., "200,202") or a range of values (e.g., "200-299").
+  }
+}
+
+
+#AWS LAunch Templete Terraform
+
+resource "aws_launch_template" "catalogue" {
+  name                                 = "${local.common_name_suffix}-catalogue"
+  image_id                             = aws_ami_from_instance.take_catalogue_ami.id
+  instance_initiated_shutdown_behavior = "terminate"
+  instance_type                        = "t3.micro"
+  vpc_security_group_ids               = [local.catalogue_sg_id]
+  tag_specifications {
+    #tags attached to the instance
+    resource_type = "instance"
+    tags = merge(local.common_tags,
+    { Name = "${local.common_name_suffix}- catalogue" })
+  }
+  tag_specifications {
+    #tags attached to the volume created by the instance
+    resource_type = "volume"
+    tags = merge(local.common_tags,
+    { Name = "${local.common_name_suffix}- catalogue" })
+  }
+
+  #tags attached to the Launch template
+  tags = merge(local.common_tags,
+  { Name = "${local.common_name_suffix}- catalogue" })
+}
+
+
+#Autoscaling group
+
+resource "aws_autoscaling_group" "catalogue" {
+  name                      = "${local.common_name_suffix}- catalogue"
+  max_size                  = 10
+  min_size                  = 1
+  health_check_grace_period = 100
+  health_check_type         = "ELB"
+  desired_capacity          = 1
+  #Number of Amazon EC2 instances that should be running in the group
+  force_delete = false
+  #instead of placement group - target group
+  #launch template
+  launch_template {
+    id      = aws_launch_template.catalogue.id
+    version = aws_launch_template.catalogue.latest_version
+  }
+
+
+  vpc_zone_identifier = local.private_subnet_ids #array of private subnets
+
+
+
+  dynamic "tag" {
+
+    #we get the iterationr with name as tag
+    for_each = merge(local.common_tags,
+    { Name = "${local.common_name_suffix}- catalogue" })
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = true
+    }
+
+
+  }
+
+
+  timeouts {
+    delete = "15m"
+  }
+  target_group_arns = [aws_lb_target_group.catalogue.arn]
+  # Set of aws_alb_target_group ARNs, for use with Application or Network Load Balancing. To remove all target group attachments an empty list should be specified.
+
+}
+
+
+#Autoscaling policy
+
+resource "aws_autoscaling_policy" "catalogue" {
+  autoscaling_group_name = aws_autoscaling_group.catalogue.name
+  name                   = "${local.common_name_suffix}- catalogue"
+  policy_type            = "TargetTrackingScaling"
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAverageCPUUtilization"
+    }
+
+    target_value = 75.0
+  }
+}

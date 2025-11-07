@@ -48,3 +48,7 @@ data "aws_ssm_parameter" "rabbitmq_id" {
 data "aws_ssm_parameter" "catalogue_id" {
   name = "/${var.project}/${var.environment}/catalogue_sg-id"
 }
+
+data "aws_ssm_parameter" "vpc_id" {
+  name = "/${var.project}/${var.environment}/vpc-id"
+}
