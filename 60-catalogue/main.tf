@@ -199,16 +199,16 @@ resource "aws_lb_listener_rule" "catalogue" {
   }
 }
 
-resource "terraform_data" "catalogue_local_exec" {
+# resource "terraform_data" "catalogue_local_exec" {
 
 
-  triggers_replace = [
-    aws_instance.catalogue.id #dependent on instaNCE creation
-  ]
+#   triggers_replace = [
+#     aws_instance.catalogue.id #dependent on instaNCE creation
+#   ]
 
-  depends_on = [aws_autoscaling_policy.catalogue]
+#   depends_on = [aws_autoscaling_policy.catalogue]
 
-  provisioner "local-exec" {
-    command = "aws ec2 terminate-instances --instance-ids ${aws_instance.catalogue.id}"
-  }
-}
+#   provisioner "local-exec" {
+#     command = "aws ec2 terminate-instances --instance-ids ${aws_instance.catalogue.id}"
+#   }
+# }
