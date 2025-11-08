@@ -102,3 +102,14 @@ resource "aws_security_group_rule" "mongodb_catalogue" {
   source_security_group_id = data.aws_ssm_parameter.catalogue_id.value
   security_group_id        = data.aws_ssm_parameter.mongodb_id.value
 }
+
+#
+resource "aws_security_group_rule" "catalogue_backend_alb" {
+#catalogue accepting traffic from baxkend alb through port 8080
+  type                     = "ingress"
+  from_port                = 8080
+  to_port                  = 8080
+  protocol                 = "tcp"
+  security_group_id        = data.aws_ssm_parameter.catalogue_id.value
+  source_security_group_id = data.aws_ssm_parameter.backend-alb_sg-id.value #backend_alb 
+}
