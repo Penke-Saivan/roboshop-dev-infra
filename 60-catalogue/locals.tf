@@ -9,6 +9,7 @@ locals {
   database_subnet_id= split(",", data.aws_ssm_parameter.database_subnet_ids.value)[0]
   private_subnet_id= split(",", data.aws_ssm_parameter.private_subnet_ids.value)[0]
   private_subnet_ids= split(",", data.aws_ssm_parameter.private_subnet_ids.value)
+  backend_alb_listener_arn = data.aws_ssm_parameter.backend_alb_listener_arn.value
     common_tags = {
     Project     = var.project
     Environment = var.environment
