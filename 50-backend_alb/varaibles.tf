@@ -10,3 +10,11 @@ variable "backend_tags" {
     Backend_ALB = true
   }
 }
+
+variable "zone_id" {
+  default = "Z03460353RS4GS5RQB39D"
+}
+
+variable "zone_name" {
+  default = "believeinyou.fun"
+}
