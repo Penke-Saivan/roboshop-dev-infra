@@ -75,7 +75,7 @@ resource "aws_lb_target_group" "catalogue" {
 
   #  (May be required, Forces new resource) Port on which targets receive traffic, unless overridden when registering a specific target. Required when target_type is instance, ip or alb. Does not apply when target_type is lambda
   protocol = "HTTP"
-  vpc_id   = data.aws_ssm_parameter.vpc_id
+  vpc_id   = data.aws_ssm_parameter.vpc_id.value
   health_check {
     path = "/health"
     port = 8080
