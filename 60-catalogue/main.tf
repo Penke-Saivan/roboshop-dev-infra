@@ -99,6 +99,7 @@ resource "aws_launch_template" "catalogue" {
   instance_initiated_shutdown_behavior = "terminate"
   instance_type                        = "t3.micro"
   vpc_security_group_ids               = [local.catalogue_sg_id]
+  update_default_version               = true
   tag_specifications {
     #tags attached to the instance
     resource_type = "instance"
@@ -139,7 +140,13 @@ resource "aws_autoscaling_group" "catalogue" {
 
   vpc_zone_identifier = local.private_subnet_ids #array of private subnets
 
-
+  instance_refresh {
+    strategy = "Rolling"
+    preferences {
+      min_healthy_percentage = 50 #atleast 50% of instances should be up
+    }
+    triggers = ["launch_template"]
+  }
 
   dynamic "tag" {
 
