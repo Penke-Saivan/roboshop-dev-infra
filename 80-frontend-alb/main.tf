@@ -39,9 +39,10 @@ resource "aws_lb_listener" "front_end" {
 #Creating Route 53 reord for frontend alb
 
 resource "aws_route53_record" "frontend_alb" {
-  zone_id = var.zone_id
-  name    = "roboshop-${var.environment}.${var.zone_name}"
-  type    = "A"
+  zone_id         = var.zone_id
+  name            = "roboshop-${var.environment}.${var.zone_name}"
+  type            = "A"
+  allow_overwrite = true
 
   alias {
     #these are realted to alb not our domain details
