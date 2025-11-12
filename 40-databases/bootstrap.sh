@@ -28,6 +28,7 @@ else
     cd $ANSIBLE_DIR
 
 fi
-
+echo "environment is $2"
+echo "-++++++++++++++++component is $1----------------"
 ansible-playbook -e component=$component -e envir=$environment main.yaml
 
