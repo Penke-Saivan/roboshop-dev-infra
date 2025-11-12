@@ -3,7 +3,7 @@ resource "aws_instance" "catalogue" {
   ami                    = data.aws_ami.ami.id
   instance_type          = "t3.micro"
   vpc_security_group_ids = [local.catalogue_sg_id]
-  subnet_id              = local.database_subnet_id
+  subnet_id              = local.private_subnet_id
   #   subnet_id              = split(",", data.aws_ssm_parameter.public_subnet_ids.value)[0]
 
 
