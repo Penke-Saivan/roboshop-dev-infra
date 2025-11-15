@@ -6,13 +6,13 @@ variable "rule_priority" {
 }
 variable "components" {
   default = {
-    catalogue = {
-      rule_priority = 10
-      #if you want to add any input ike instance type we can add from here
-    }
-    # user = {
-    #   rule_priority = 20
+    # catalogue = {
+    #   rule_priority = 10
+    #   #if you want to add any input ike instance type we can add from here
     # }
+    user = {
+      rule_priority = 20
+    }
     # cart = {
     #   rule_priority = 30
     # }
