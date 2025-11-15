@@ -9,4 +9,5 @@ module "components" {
   source        = "git::https://github.com/Penke-Saivan/terraform-roboshop-component.git?ref=main"
   component     = each.key
   rule_priority = each.value.rule_priority
+  #Reconfigure required as we changed the source tf init -reconfigure
 }
