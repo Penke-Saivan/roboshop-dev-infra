@@ -185,6 +185,52 @@ resource "aws_security_group_rule" "cart_backend_alb" {
   security_group_id        = data.aws_ssm_parameter.cart_id.value
   source_security_group_id = data.aws_ssm_parameter.backend-alb_sg-id.value #backend_alb 
 }
+
+#----------Shipping-------- opening its port for other servers#############
+#shipping instance accepting traffic from bastion 
+resource "aws_security_group_rule" "shipping_bastion" {
+
+  type      = "ingress"
+  from_port = 22
+  to_port   = 22
+  protocol  = "tcp"
+  # cidr_blocks = ["0.0.0.0/0"]
+  source_security_group_id = data.aws_ssm_parameter.bastion_id.value #bastion host
+  security_group_id        = data.aws_ssm_parameter.shipping_id.value
+}
+resource "aws_security_group_rule" "shipping_backend_alb" {
+  #shipping accepting traffic from baxkend alb through port 8080
+  type                     = "ingress"
+  from_port                = 8080
+  to_port                  = 8080
+  protocol                 = "tcp"
+  security_group_id        = data.aws_ssm_parameter.shipping_id.value
+  source_security_group_id = data.aws_ssm_parameter.backend-alb_sg-id.value #backend_alb 
+}
+
+#----------Payment-------- opening its port for other servers#############
+#payment instance accepting traffic from bastion 
+resource "aws_security_group_rule" "payment_bastion" {
+
+  type      = "ingress"
+  from_port = 22
+  to_port   = 22
+  protocol  = "tcp"
+  # cidr_blocks = ["0.0.0.0/0"]
+  source_security_group_id = data.aws_ssm_parameter.bastion_id.value #bastion host
+  security_group_id        = data.aws_ssm_parameter.payment_id.value
+}
+resource "aws_security_group_rule" "payment_backend_alb" {
+  #payment accepting traffic from baxkend alb through port 8080
+  type                     = "ingress"
+  from_port                = 8080
+  to_port                  = 8080
+  protocol                 = "tcp"
+  security_group_id        = data.aws_ssm_parameter.payment_id.value
+  source_security_group_id = data.aws_ssm_parameter.backend-alb_sg-id.value #backend_alb 
+}
+
+#------------Backend-ALB---------- opening its port for other servers
 resource "aws_security_group_rule" "backend-alb_bastion" {
   #backen-alb acceptiong connection from bastion on port number 80
   #creating security rule in backend_alb - where we are attaching sg of bastion host
@@ -205,6 +251,75 @@ resource "aws_security_group_rule" "backend-alb_frontend" {
   source_security_group_id = data.aws_ssm_parameter.frontend_id.value
   security_group_id        = data.aws_ssm_parameter.backend-alb_sg-id.value #backend_alb 
 }
+
+resource "aws_security_group_rule" "backend-cart" {
+  #backen-alb acceptiong connection from cart through 80
+
+  type                     = "ingress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  source_security_group_id = data.aws_ssm_parameter.cart_id.value
+  security_group_id        = data.aws_ssm_parameter.backend-alb_sg-id.value #backend_alb 
+}
+resource "aws_security_group_rule" "backend-shipping" {
+  #backen-alb acceptiong connection from shipping through 80
+
+  type                     = "ingress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  source_security_group_id = data.aws_ssm_parameter.shipping_id.value
+  security_group_id        = data.aws_ssm_parameter.backend-alb_sg-id.value #backend_alb 
+}
+resource "aws_security_group_rule" "backend-payment" {
+  #backen-alb acceptiong connection from payment through 80
+
+  type                     = "ingress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  source_security_group_id = data.aws_ssm_parameter.payment_id.value
+  security_group_id        = data.aws_ssm_parameter.backend-alb_sg-id.value #backend_alb 
+}
+
+
+#-----------Frontend--------------opening its port for other servers
+resource "aws_security_group_rule" "frontend_frontend_alb" {
+
+  type                     = "ingress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  security_group_id        = data.aws_ssm_parameter.frontend_id.value
+  source_security_group_id = data.aws_ssm_parameter.frontend-alb_sg-id.value
+}
+
+#frontend instance accepting traffic from bastion 
+
+resource "aws_security_group_rule" "frontend_bastion" {
+
+  type      = "ingress"
+  from_port = 22
+  to_port   = 22
+  protocol  = "tcp"
+  # cidr_blocks = ["0.0.0.0/0"]
+  source_security_group_id = data.aws_ssm_parameter.bastion_id.value #bastion host
+  security_group_id        = data.aws_ssm_parameter.frontend_id.value
+}
+
+#-----------Frontend-ALB ---------------#
+resource "aws_security_group_rule" "frontend_alb_public" {
+  #frontend_alb accepting traffic from public through 443
+  type              = "ingress"
+  from_port         = 443
+  to_port           = 443
+  protocol          = "tcp"
+  security_group_id = data.aws_ssm_parameter.frontend-alb_sg-id.value
+  cidr_blocks       = ["0.0.0.0/0"]
+}
+
+#-----------Bastion ---------------#
 resource "aws_security_group_rule" "bastion_laptop" {
   #creating security rule in backend_alb - where we are attaching sg of bastion host
   type              = "ingress"
@@ -214,6 +329,9 @@ resource "aws_security_group_rule" "bastion_laptop" {
   cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = data.aws_ssm_parameter.bastion_id.value #bastion host
 }
+
+#Now intercommunication among backends through Backend-ALB
+
 
 
 
@@ -261,83 +379,12 @@ resource "aws_security_group_rule" "bastion_laptop" {
 # }
 
 
-resource "aws_security_group_rule" "shipping_backend_alb" {
-  #shipping accepting traffic from baxkend alb through port 8080
-  type                     = "ingress"
-  from_port                = 8080
-  to_port                  = 8080
-  protocol                 = "tcp"
-  security_group_id        = data.aws_ssm_parameter.shipping_id.value
-  source_security_group_id = data.aws_ssm_parameter.backend-alb_sg-id.value #backend_alb 
-}
-resource "aws_security_group_rule" "payment_backend_alb" {
-  #payment accepting traffic from baxkend alb through port 8080
-  type                     = "ingress"
-  from_port                = 8080
-  to_port                  = 8080
-  protocol                 = "tcp"
-  security_group_id        = data.aws_ssm_parameter.payment_id.value
-  source_security_group_id = data.aws_ssm_parameter.backend-alb_sg-id.value #backend_alb 
-}
-
-resource "aws_security_group_rule" "frontend_alb_public" {
-  #frontend_alb accepting traffic from public through 443
-  type              = "ingress"
-  from_port         = 443
-  to_port           = 443
-  protocol          = "tcp"
-  security_group_id = data.aws_ssm_parameter.frontend-alb_sg-id.value
-  cidr_blocks       = ["0.0.0.0/0"]
-}
-
-resource "aws_security_group_rule" "frontend_frontend_alb" {
-  #frontend_alb accepting traffic from public through 443
-  type                     = "ingress"
-  from_port                = 443
-  to_port                  = 443
-  protocol                 = "tcp"
-  security_group_id        = data.aws_ssm_parameter.frontend_id.value
-  source_security_group_id = data.aws_ssm_parameter.frontend-alb_sg-id.value
-}
 
 
 
-#payment instance accepting traffic from bastion 
 
-resource "aws_security_group_rule" "payment_bastion" {
 
-  type      = "ingress"
-  from_port = 22
-  to_port   = 22
-  protocol  = "tcp"
-  # cidr_blocks = ["0.0.0.0/0"]
-  source_security_group_id = data.aws_ssm_parameter.bastion_id.value #bastion host
-  security_group_id        = data.aws_ssm_parameter.payment_id.value
-}
-#shipping instance accepting traffic from bastion 
 
-resource "aws_security_group_rule" "shipping_bastion" {
-
-  type      = "ingress"
-  from_port = 22
-  to_port   = 22
-  protocol  = "tcp"
-  # cidr_blocks = ["0.0.0.0/0"]
-  source_security_group_id = data.aws_ssm_parameter.bastion_id.value #bastion host
-  security_group_id        = data.aws_ssm_parameter.shipping_id.value
-}
-#frontend instance accepting traffic from bastion 
-
-resource "aws_security_group_rule" "frontend_bastion" {
-
-  type      = "ingress"
-  from_port = 22
-  to_port   = 22
-  protocol  = "tcp"
-  # cidr_blocks = ["0.0.0.0/0"]
-  source_security_group_id = data.aws_ssm_parameter.bastion_id.value #bastion host
-  security_group_id        = data.aws_ssm_parameter.frontend_id.value
-}
 
 # resource "aws_security_group_rule" "frontend_backend-alb" {
 #   #creating security rule in frontend - where we are attaching sg of frontend alb
