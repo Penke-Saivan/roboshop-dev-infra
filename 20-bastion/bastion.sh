@@ -18,61 +18,49 @@
 #!/bin/bash
 set -euo pipefail
 
-echo "=== Bastion bootstrap starting ==="
+echo "=== Starting Bastion libsnoopy/OpenSSL fix ==="
 
-############################################
-# 1. FIX LIBSNOOPY + OPENSSL MISMATCH ISSUE
-############################################
+# Create log file
+LOG_FILE="/var/log/bastion-fix.log"
+exec > >(tee -a "$LOG_FILE") 2>&1
 
-cat <<'EOF' > /root/fix_openssl_snoopy.sh
-#!/bin/bash
-set -euo pipefail
-
-echo "=== Starting OpenSSL/libsnoopy fix ==="
-
-# 1. Backup preload file
+echo "[1/5] Backing up /etc/ld.so.preload (if exists)..."
 if [ -f /etc/ld.so.preload ]; then
-    echo "[+] Backing up /etc/ld.so.preload to /root/ld.so.preload.bak"
-    cp /etc/ld.so.preload /root/ld.so.preload.bak 2>/dev/null || true
+    cp /etc/ld.so.preload /root/ld.so.preload.bak || true
+else
+    echo "No preload file found (OK)."
 fi
 
-# 2. Remove libsnoopy lines
+echo "[2/5] Removing libsnoopy entries from preload..."
 if [ -f /etc/ld.so.preload ]; then
     sed -i '/libsnoopy/d' /etc/ld.so.preload || true
-    # If file becomes empty, disable it safely
+
+    # Disable the preload file if it becomes empty
     if [ ! -s /etc/ld.so.preload ]; then
-        mv /etc/ld.so.preload /etc/ld.so.preload.disabled 2>/dev/null || true
+        mv /etc/ld.so.preload /etc/ld.so.preload.disabled || true
+        echo "Preload file was empty → disabled."
     fi
+else
+    echo "Nothing to clean (preload disabled already)."
 fi
 
-# 3. Move libsnoopy libraries to backup
+echo "[3/5] Moving libsnoopy libraries to backup directory..."
 mkdir -p /root/syslib-backup
 for f in /usr/local/lib/libsnoopy*; do
     if [ -e "$f" ]; then
-        mv "$f" /root/syslib-backup/ 2>/dev/null || true
+        mv "$f" /root/syslib-backup/ || true
     fi
 done
 
-# 4. Clean remaining libsnoopy artifacts
-rm -f /usr/local/lib/libsnoopy.so \
-      /usr/local/lib/libsnoopy.so.* \
-      /usr/local/lib/libsnoopy.la 2>/dev/null || true
-
-# 5. Rebuild dynamic linker cache
+echo "[4/5] Refreshing dynamic linker cache..."
 ldconfig || true
 
-# 6. Restart SSH safely
+echo "[5/5] Restarting SSH daemon..."
 systemctl restart sshd || true
 
-echo "=== libsnoopy/openssl fix completed ==="
-EOF
+echo "=== libsnoopy/OpenSSL fix completed successfully ==="
+echo "Log stored at: $LOG_FILE"
 
-chmod +x /root/fix_openssl_snoopy.sh
-
-# Run the fix and log output
-bash /root/fix_openssl_snoopy.sh > /var/log/bastion-fix.log 2>&1
-
-echo "=== libsnoopy fix executed (log: /var/log/bastion-fix.log) ==="
 
 
 ############################################
