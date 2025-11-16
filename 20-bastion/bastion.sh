@@ -1,71 +1,41 @@
-# #!/bin/bash
-# sudo growpart /dev/nvme0n1 4
-# sudo lvextend -L +30G /dev/mapper/RootVG-homeVol
-# sudo xfs_growfs /home
-
-# sudo yum install -y yum-utils
-# sudo yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
-# sudo yum -y install terraform
-
-# # creating databases
-# cd /home/ec2-user
-# git clone https://github.com/Penke-Saivan/roboshop-dev-infra.git
-# chown ec2-user:ec2-user -R roboshop-dev-infra
-# cd roboshop-dev-infra/40-databases
-# terraform init
-# terraform apply -auto-approve
-
 #!/bin/bash
-set -euo pipefail
+set -e
 
-echo "=== Starting Bastion libsnoopy/OpenSSL fix ==="
 
-# Create log file
-LOG_FILE="/var/log/bastion-fix.log"
-exec > >(tee -a "$LOG_FILE") 2>&1
 
-echo "[1/5] Backing up /etc/ld.so.preload (if exists)..."
+echo "=== Starting libsnoopy preload fix ==="
+
+# Disable libsnoopy preload if present
 if [ -f /etc/ld.so.preload ]; then
-    cp /etc/ld.so.preload /root/ld.so.preload.bak || true
-else
-    echo "No preload file found (OK)."
-fi
-
-echo "[2/5] Removing libsnoopy entries from preload..."
-if [ -f /etc/ld.so.preload ]; then
+    cp /etc/ld.so.preload /root/ld.so.preload.bak 2>/dev/null || true
     sed -i '/libsnoopy/d' /etc/ld.so.preload || true
 
-    # Disable the preload file if it becomes empty
+    # If file becomes empty, disable it
     if [ ! -s /etc/ld.so.preload ]; then
-        mv /etc/ld.so.preload /etc/ld.so.preload.disabled || true
-        echo "Preload file was empty → disabled."
+        mv /etc/ld.so.preload /etc/ld.so.preload.disabled 2>/dev/null || true
     fi
-else
-    echo "Nothing to clean (preload disabled already)."
 fi
 
-echo "[3/5] Moving libsnoopy libraries to backup directory..."
+# Create backup directory (idempotent)
 mkdir -p /root/syslib-backup
-for f in /usr/local/lib/libsnoopy*; do
+
+# Move any libsnoopy files (from any location) into backup
+for f in /usr/local/lib/libsnoopy* /lib/libsnoopy* /lib64/libsnoopy*; do
     if [ -e "$f" ]; then
-        mv "$f" /root/syslib-backup/ || true
+        mv "$f" /root/syslib-backup/ 2>/dev/null || true
     fi
 done
 
-echo "[4/5] Refreshing dynamic linker cache..."
+# Refresh linker cache
 ldconfig || true
 
-echo "[5/5] Restarting SSH daemon..."
+# Restart SSH daemon
 systemctl restart sshd || true
 
-echo "=== libsnoopy/OpenSSL fix completed successfully ==="
-echo "Log stored at: $LOG_FILE"
+echo "=== libsnoopy fix completed ==="
 
 
 
-############################################
-# 2. NORMAL BASTION SETUP
-############################################
 
 echo "=== Expanding home volume ==="
 growpart /dev/nvme0n1 4
@@ -77,17 +47,7 @@ yum install -y yum-utils
 yum-config-manager --add-repo https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
 yum -y install terraform
 
-echo "=== Bastion bootstrap completed successfully ==="
+echo "=== Bastion bootstrap completed successfully ===" > /var/log/bastion-userdata.log
 
 
-# echo "=== Cloning roboshop infra ==="
-# cd /home/ec2-user
-# git clone  https://github.com/Penke-Saivan/roboshop-dev-infra.git
-# chown ec2-user:ec2-user -R roboshop-dev-infra
 
-# echo "=== Running database Terraform ==="
-# cd roboshop-dev-infra/40-databases
-# terraform init
-# terraform apply -auto-approve
-
-# echo "=== Bastion setup complete ==="
