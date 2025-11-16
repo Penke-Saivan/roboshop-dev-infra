@@ -52,9 +52,19 @@ else
 fi
 
 echo "Component: $component | Environment: $environment"
-#  inventory with correct settings
+# #  inventory with correct settings
+# cat <<EOF > inventory.ini
+# [local]
+# localhost
+
+# [all:vars]
+# ansible_connection=local
+# ansible_python_interpreter=/usr/bin/python3
+# EOF
+echo "=== Creating dynamic inventory for component ${component} ==="
+
 cat <<EOF > inventory.ini
-[local]
+[${component}]
 localhost
 
 [all:vars]
