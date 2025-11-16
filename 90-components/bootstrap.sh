@@ -3,6 +3,19 @@
 component=$1
 environment=$2
 dnf install ansible -y 
+#REMOTE-EXEC SCRIPT
+sudo mkdir -p /etc/ansible
+
+sudo tee /etc/ansible/ansible.cfg > /dev/null << 'EOF'
+[defaults]
+transport = ssh
+
+[ssh_connection]
+ssh_args =
+ssh_executable = /usr/bin/ssh
+pipelining = True
+EOF
+
 # ansible-pull -U "https://github.com/Penke-Saivan/ansible-roboshop-roles-Terraform.git" -e component=$component main.yaml
 
 #how to copy a file from terraform to ec2
