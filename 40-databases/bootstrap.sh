@@ -1,8 +1,15 @@
 #!/bin/bash
 component=$1
 environment=$2
-dnf install ansible -y
+# dnf install ansible -y
 # ansible-pull -U "https://github.com/Penke-Saivan/ansible-roboshop-roles-Terraform.git" -e component=$component main.yaml
+
+echo "=== Fixing OpenSSL mismatch ==="
+dnf install -y openssl openssl-libs openssh openssh-server openssh-clients || true
+dnf install -y python3-devel gcc || true
+
+echo "=== Installing Ansible ==="
+dnf install ansible -y
 
 #how to copy a file from terraform to ec2
 
