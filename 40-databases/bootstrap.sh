@@ -52,3 +52,9 @@ echo "-------------------------------------environment is $2"
 echo "-++++++++++++++++component is $1-------------------------------------------------------------"
 ansible-playbook -e component=$component -e envir=$environment main.yaml
 
+# [mongodb]
+# localhost
+
+# [all:vars]
+# ansible_connection=local
+# ansible_python_interpreter=/usr/bin/python3
