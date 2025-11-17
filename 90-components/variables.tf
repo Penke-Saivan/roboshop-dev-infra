@@ -19,11 +19,11 @@ variable "components" {
     # shipping = {
     #   rule_priority = 40
     # }
-    payment = {
-      rule_priority = 50
-    }
-    # frontend = {
-    #   rule_priority = 10 #Frontend load balancer is different
+    # payment = {
+    #   rule_priority = 50
     # }
+    frontend = {
+      rule_priority = 10 #Frontend load balancer is different
+    }
   }
 }
