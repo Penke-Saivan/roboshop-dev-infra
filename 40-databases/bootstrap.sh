@@ -35,7 +35,7 @@ else
     cd $ANSIBLE_DIR
 
 fi
-echo "environment is $2"
+echo "environment is $2----------------------------------------------------"
 echo "=== Creating dynamic inventory for component ${component} ==="
 
 cat <<EOF > inventory.ini
