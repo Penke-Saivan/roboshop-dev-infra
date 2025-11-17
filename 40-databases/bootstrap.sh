@@ -29,6 +29,19 @@ else
 
 fi
 echo "environment is $2"
-echo "-++++++++++++++++component is $1----------------"
+echo "=== Creating dynamic inventory for component ${component} ==="
+
+cat <<EOF > inventory.ini
+[${component}]
+localhost
+
+[all:vars]
+ansible_connection=local
+ansible_python_interpreter=/usr/bin/python3
+EOF
+
+
+echo "-------------------------------------environment is $2"
+echo "-++++++++++++++++component is $1-------------------------------------------------------------"
 ansible-playbook -e component=$component -e envir=$environment main.yaml
 
